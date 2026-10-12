@@ -30,6 +30,13 @@ const FEEDS: { name: string; url: string }[] = [
   { name: "Hindustan Times", url: "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml" },
   { name: "PIB",             url: "https://pib.gov.in/RssMain.aspx" },
   { name: "The Wire",        url: "https://thewire.in/feed" },
+  { name: "ThePrint",        url: "https://theprint.in/feed/" },
+  { name: "Scroll.in",       url: "https://feeds.feedburner.com/Scrollin" },
+  { name: "Mint",            url: "https://www.livemint.com/rss/news" },
+  { name: "Business Standard", url: "https://www.business-standard.com/rss/home_page_top_stories.rss" },
+  { name: "Swarajya",        url: "https://swarajyamag.com/feed" },
+  { name: "Deccan Herald",   url: "https://www.deccanherald.com/rss-feed/" },
+  { name: "The Tribune",     url: "https://www.tribuneindia.com/rss/feed?catId=1" },
 ];
 
 const ITEMS_PER_FEED = 6;
@@ -107,7 +114,7 @@ async function fetchFeed(feed: { name: string; url: string }): Promise<NewsItem[
     const res = await fetch(feed.url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": `GovLens-NewsBot/1.0 (+${process.env.SITE_URL ?? "https://govlens.in"})`,
+        "User-Agent": `GovLens-NewsBot/1.0 (+${process.env.SITE_URL ?? "https://github.com/Samarthgit0012/Samarthak"})`,
         "Accept": "application/rss+xml, application/xml, text/xml, */*",
       },
     });
