@@ -77,6 +77,13 @@ export default defineConfig({
   server: {
     port,
     strictPort: true,
+    // Forward API calls to the Express server during development
+    proxy: {
+      '/api': {
+        target: process.env.API_PROXY_TARGET ?? 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
     host: '0.0.0.0',
     allowedHosts: true,
     fs: {

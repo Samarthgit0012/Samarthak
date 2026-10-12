@@ -170,7 +170,7 @@ async function fetchHtml(url, retries = 3) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GovLensCrawler/1.0; +https://andhbhakt.org)' },
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GovLensCrawler/1.0; +https://govlens-india)' },
         signal: AbortSignal.timeout(15000),
       });
       if (res.ok) return await res.text();
