@@ -1,4 +1,7 @@
 import express, { type Express } from "express";
+import path from "node:path";
+import { timingSafeEqual } from "node:crypto";
+import fs from "node:fs";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
@@ -85,6 +88,65 @@ app.use("/api", cacheHeaders);
 // cookie. Bypasses: POST /api/session/verify and GET /api/healthz.
 app.use("/api", verifySessionMiddleware);
 
+// ── Write protection ────────────────────────────────────────────────────────
+// Reading is public. Anything that changes data needs the admin token, sent in
+// the X-Admin-Token header. Only the issue-report form and the bot-check
+// endpoint are open to the public; the admin routes check the token themselves.
+const PUBLIC_WRITES = [
+  { method: "POST", path: "/report-issue" },
+  { method: "POST", path: "/session/verify" },
+];
+app.use("/api", (req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) { next(); return; }
+  if (PUBLIC_WRITES.some((r) => r.method === req.method && r.path === req.path)) { next(); return; }
+  if (req.path.startsWith("/admin/")) { next(); return; }
+
+  const expected = process.env.ADMIN_TOKEN;
+  const sent = req.headers["x-admin-token"];
+  let ok = false;
+  if (expected && typeof sent === "string") {
+    const a = Buffer.from(sent);
+    const b = Buffer.from(expected);
+    ok = a.length === b.length && timingSafeEqual(a, b);
+  }
+  if (!ok) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  next();
+});
+
 app.use("/api", router);
+
+// ── Serve the built web app (single-process deployment) ─────────────────────
+// Looks for the Vite build output. Override the location with STATIC_DIR.
+const staticCandidates = [
+  process.env.STATIC_DIR,
+  path.resolve(process.cwd(), "../govlens/dist/public"),
+  path.resolve(process.cwd(), "artifacts/govlens/dist/public"),
+].filter((d): d is string => !!d);
+const staticDir = staticCandidates.find((d) =>
+  fs.existsSync(path.join(d, "index.html")),
+);
+
+if (staticDir) {
+  logger.info({ staticDir }, "Serving web app");
+  app.use(
+    express.static(staticDir, {
+      index: false,
+      setHeaders(res, filePath) {
+        // Hashed build assets can be cached for a year; HTML never.
+        if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    }),
+  );
+  // Single-page-app fallback for client-side routes
+  app.get(/^\/(?!api\/).*/, (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
+    res.sendFile(path.join(staticDir, "index.html"));
+  });
+}
 
 export default app;

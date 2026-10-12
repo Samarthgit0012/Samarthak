@@ -18,7 +18,9 @@ import { createHmac, timingSafeEqual } from "crypto";
 import type { Request, Response, NextFunction } from "express";
 
 // Fail fast at startup in production — never silently fall back to a guessable value.
-if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+const GATE_ON = process.env.ENFORCE_SESSION_GATE === "true";
+
+if (GATE_ON && process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
   throw new Error(
     "SESSION_SECRET environment variable is required in production. " +
     "Generate one with: openssl rand -hex 32"
@@ -64,8 +66,9 @@ export function verifySessionMiddleware(
   );
   if (bypass) { next(); return; }
 
-  // Development: skip session gate so local dev is not blocked
-  if (process.env.NODE_ENV !== "production") { next(); return; }
+  // The bot-check cookie gate is opt-in (ENFORCE_SESSION_GATE=true). The web app
+  // only issues the cookie when the Turnstile challenge component is mounted.
+  if (!GATE_ON || process.env.NODE_ENV !== "production") { next(); return; }
 
   const raw = req.cookies?.[COOKIE_NAME];
   if (typeof raw !== "string") {

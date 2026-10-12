@@ -65,7 +65,12 @@ export function cloudflareOnlyMiddleware(
   res: Response,
   next: NextFunction,
 ): void {
-  if (process.env.NODE_ENV !== "production") { next(); return; }
+  // Opt-in: only enforced when the app really sits behind Cloudflare.
+  // Set ENFORCE_CLOUDFLARE_ONLY=true to turn it on in production.
+  if (
+    process.env.NODE_ENV !== "production" ||
+    process.env.ENFORCE_CLOUDFLARE_ONLY !== "true"
+  ) { next(); return; }
 
   // Health checks come from Replit's infra without CF headers — allow them
   if (req.path === "/api/healthz") { next(); return; }

@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { db, schemesTable, pibEntriesTable, cagAuditsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { refreshLimiter } from "../middlewares/rate-limit";
 import { logger } from "../lib/logger";
 
@@ -60,6 +59,21 @@ function isValidCagUrl(url: unknown): url is string {
 }
 
 router.post("/schemes/:slug/refresh", refreshLimiter, async (req, res): Promise<void> => {
+  // Live refresh writes unreviewed search results into the database, so it is
+  // off unless an operator explicitly enables it and supplies credentials.
+  const enabled =
+    process.env.ENABLE_LIVE_REFRESH === "true" &&
+    !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY &&
+    !!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  if (!enabled) {
+    res.status(503).json({
+      error:
+        "Live refresh is disabled on this deployment. Data is updated from the published source documents.",
+    });
+    return;
+  }
+  const { openai } = await import("@workspace/integrations-openai-ai-server");
+
   const rawSlug = Array.isArray(req.params.slug)
     ? req.params.slug[0]
     : req.params.slug;
@@ -101,7 +115,6 @@ router.post("/schemes/:slug/refresh", refreshLimiter, async (req, res): Promise<
   const [pibResp, cagResp] = await Promise.all([
     openai.responses.create({
       model: AI_MODEL,
-      // @ts-expect-error – web_search_preview is a Replit-extended tool type not in the public SDK types
       tools: [{ type: "web_search_preview" }],
       input: `Search pib.gov.in for official press releases about "${scheme.name}" (${scheme.ministry}) published AFTER ${latestPibDate}.
 
@@ -133,7 +146,6 @@ Return ONLY a valid JSON array.`,
     }),
     openai.responses.create({
       model: AI_MODEL,
-      // @ts-expect-error – web_search_preview is a Replit-extended tool type not in the public SDK types
       tools: [{ type: "web_search_preview" }],
       input: `Search cag.gov.in for published Comptroller and Auditor General (CAG) of India audit reports with findings about "${scheme.name}".
 
