@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
-import { Search, BarChart3, Menu, X, FileText, BookOpen, Flag, IndianRupee, Globe, Github } from 'lucide-react';
+import { Search, BarChart3, Menu, X, FileText, BookOpen, Flag, IndianRupee, Globe, Github, TrendingUp, ClipboardCheck, Library, Scale } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +17,10 @@ export function Navbar() {
     { href: '/reports', label: t('navCagReports'), icon: FileText },
     { href: '/funding', label: t('navPartyFunding'), icon: IndianRupee, badge: t('navBeta') },
     { href: '/development-index', label: t('navDevelopmentIndex'), icon: BarChart3 },
+    { href: '/trends', label: t('navTrends', 'Trends'), icon: TrendingUp },
+    { href: '/outcomes', label: t('navOutcomes', 'Outcomes'), icon: ClipboardCheck },
+    { href: '/sources', label: t('navSources', 'Sources'), icon: Library },
+    { href: '/methodology', label: t('navMethodology', 'Methodology'), icon: Scale },
   ];
 
   // Close on outside click
@@ -83,10 +87,10 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="Andhbhakt.org" className="w-9 h-9 rounded object-cover" />
+            <img src="/logo.png" alt="GovLens India" className="w-9 h-9 rounded object-cover" />
             <div>
               <div className="font-bold text-foreground group-hover:text-primary transition-colors">
-                Andhbhakt.org
+                GovLens India
               </div>
               <div className="text-xs text-muted-foreground font-mono">
                 {t('navSubtitle')}
@@ -99,7 +103,7 @@ export function Navbar() {
 
           {/* GitHub */}
           <a
-            href="https://github.com/JCRYDER3/andhbhakt"
+            href="https://github.com/JCRYDER3/GovLens India"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View source on GitHub"

@@ -11,6 +11,7 @@ import { useGetScheme, useGetSchemeVerdict, useListPibEntries, useListCagAudits,
 import { Navbar } from '@/components/navbar';
 import { SeverityBadge } from '@/components/severity-badge';
 import { VerdictBadge } from '@/components/verdict-badge';
+import { SchemeOutcomes } from '@/components/scheme-outcomes';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, FileText, AlertTriangle, ExternalLink, TrendingUp, Target } from 'lucide-react';
 import { Link } from 'wouter';
@@ -18,7 +19,6 @@ import { Link } from 'wouter';
 const schemeHi: Record<string, { nameHi?: string; descriptionHi?: string; goalsHi?: string }> = schemeHiRaw as any;
 const _sdHi = schemeDetailHiRaw as any;
 const cagHiMap: Record<string, { parameterHi?: string; findingHi?: string; reportExcerptHi?: string; claimedHi?: string; actualHi?: string; unitHi?: string }> = _sdHi.cagMap;
-const verdictHiMap: Record<string, string> = _sdHi.verdictMap;
 const pibHiMap: Record<string, { headlineHi?: string; summaryHi?: string }> = _sdHi.pibMap;
 
 /** Stable lookup key: first 120 chars lowercased — matches the key format in scheme-detail-hi.json */
@@ -179,7 +179,11 @@ export default function SchemeDetail() {
                   </div>
                   <Progress value={verdict.score} className="mt-2" />
                 </div>
-                <p className="text-sm text-muted-foreground">{i18n.language === 'hi' ? (verdictHiMap[slug] ?? verdict.summary) : verdict.summary}</p>
+                <p className="text-sm text-muted-foreground">{verdict.totalAudits === 0
+                    ? t('verdictNoteNone')
+                    : verdict.criticalCount + verdict.majorCount === 0
+                      ? t('verdictNoteMinor')
+                      : t('verdictNoteFindings', { critical: verdict.criticalCount, major: verdict.majorCount, minor: verdict.minorCount })}</p>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -198,6 +202,9 @@ export default function SchemeDetail() {
             </div>
           </div>
         )}
+
+        {/* Independent outcome data (household surveys) */}
+        <SchemeOutcomes slug={slug} />
 
         {/* PIB vs CAG Comparison */}
         <div className="grid lg:grid-cols-2 gap-6 mb-6">

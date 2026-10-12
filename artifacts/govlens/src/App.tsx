@@ -17,6 +17,10 @@ const DevelopmentIndex = lazy(() => import('@/pages/development-index'));
 const Funding          = lazy(() => import('@/pages/funding'));
 const MinisterProfile  = lazy(() => import('@/pages/minister-profile'));
 const About            = lazy(() => import('@/pages/about'));
+const Trends           = lazy(() => import('@/pages/trends'));
+const Outcomes         = lazy(() => import('@/pages/outcomes'));
+const Sources          = lazy(() => import('@/pages/sources'));
+const Methodology      = lazy(() => import('@/pages/methodology'));
 const TermsOfUse       = lazy(() => import('@/pages/terms'));
 const Disclaimer       = lazy(() => import('@/pages/disclaimer'));
 const ReportIssue      = lazy(() => import('@/pages/report-issue'));
@@ -44,6 +48,10 @@ function Router() {
         <Route path="/rankings" component={Rankings} />
         <Route path="/central-data" component={CentralData} />
         <Route path="/funding" component={Funding} />
+        <Route path="/trends" component={Trends} />
+        <Route path="/outcomes" component={Outcomes} />
+        <Route path="/sources" component={Sources} />
+        <Route path="/methodology" component={Methodology} />
         <Route path="/about" component={About} />
         <Route path="/terms" component={TermsOfUse} />
         <Route path="/disclaimer" component={Disclaimer} />
