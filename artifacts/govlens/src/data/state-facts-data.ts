@@ -433,7 +433,7 @@ export const STATE_FACTS: StateFact[] = [
     // ── Accountability Ratings ───────────────────────────────────────────────
     // Methodology: (a) ECI affidavit data for all 13 elected officials,
     // (b) 7 AR-specific CAG findings across 2022–2025 reports (2 critical, 3 major, 2 minor),
-    // (c) national scheme audits in the Andhbhakt.org DB.
+    // (c) national scheme audits in the GovLens India DB.
     accountabilityRatings: [
       {
         key: 'transparency',

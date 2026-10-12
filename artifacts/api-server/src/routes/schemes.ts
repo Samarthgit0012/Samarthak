@@ -318,21 +318,24 @@ router.get("/schemes/:slug/verdict", async (req, res): Promise<void> => {
   let verdict: string;
   let summary: string;
 
+  const findings = `${critical} critical, ${major} major and ${minor} minor`;
+  const caveat =
+    "Audit findings point to gaps in compliance, process or delivery; they do not by themselves show whether the scheme met its goals.";
+
   if (total === 0) {
     verdict = "unaudited";
-    summary = "No CAG audit findings are available for this scheme yet.";
+    summary =
+      "No CAG findings are on record for this scheme in our database. That says nothing about performance either way.";
   } else if (critical >= 2) {
     verdict = "critical";
-    summary = `Severe accountability failure: ${critical} critical finding${critical > 1 ? "s" : ""} by CAG. Significant gap between stated goals and ground reality.`;
-  } else if (critical >= 1 || major >= 3) {
+    summary = `CAG has recorded ${findings} findings. ${caveat}`;
+  } else if (critical >= 1 || major >= 1) {
     verdict = "off_track";
-    summary = `Accountability concerns: ${critical} critical and ${major} major finding${major !== 1 ? "s" : ""} indicate the scheme is not meeting its stated objectives.`;
-  } else if (major >= 1) {
-    verdict = "off_track";
-    summary = `${major} major CAG finding${major !== 1 ? "s" : ""} indicate gaps between PIB claims and actual implementation.`;
+    summary = `CAG has recorded ${findings} findings. ${caveat}`;
   } else {
     verdict = "on_track";
-    summary = `Only minor issues found. The scheme is broadly meeting its stated objectives per available CAG audits.`;
+    summary =
+      "Only minor findings are on record. This is an audit signal, not a measure of results.";
   }
 
   res.json(

@@ -1,10 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 
-const SITE_URL = 'https://andhbhakt.org';
-const SITE_NAME = 'AndhBhakt.org';
+// Set VITE_SITE_URL to your public address; otherwise the current origin is used.
+const SITE_URL: string =
+  (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/$/, '') ??
+  (typeof window !== 'undefined' ? window.location.origin : '');
+const SITE_NAME = 'GovLens India';
 const DEFAULT_DESCRIPTION =
-  "India's government accountability tracker — minister integrity scores, CAG audit findings vs government claims, state governance report cards, and global development rankings.";
+  "Government claims beside CAG audit findings and independent survey outcomes, with long-run trends from 2004 and every source linked.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og/default.jpg`;
 
 interface SEOProps {
@@ -67,7 +70,6 @@ export function SEO({
 
       {/* Twitter / X */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content="@andhbhakt" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={absImage} />

@@ -3,7 +3,7 @@ import { Scale, Github, Copy, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
-const CLONE_CMD = 'git clone https://github.com/JCRYDER3/andhbhakt.git';
+const CLONE_CMD = 'git clone https://github.com/JCRYDER3/GovLens India.git';
 
 export function Footer() {
   const { t } = useTranslation();
@@ -26,7 +26,7 @@ export function Footer() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Scale className="w-4 h-4 flex-shrink-0" />
             <span>
-              © {year} Andhbhakt.org — {t('footerTagline')}
+              © {year} GovLens India — {t('footerTagline')}
             </span>
           </div>
 
@@ -65,7 +65,7 @@ export function Footer() {
         {/* Open source strip */}
         <div className="mt-5 flex flex-col sm:flex-row items-center gap-3">
           <a
-            href="https://github.com/JCRYDER3/andhbhakt"
+            href="https://github.com/JCRYDER3/GovLens India"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"

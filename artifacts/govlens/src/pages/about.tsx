@@ -8,8 +8,8 @@ export default function About() {
   return (
     <div className="min-h-[100dvh] bg-background">
       <SEO
-        title="About AndhBhakt.org — India's Government Accountability Tracker"
-        description="AndhBhakt.org tracks what the Indian government claims vs what CAG audits actually find. Independent, data-driven journalism on minister integrity and scheme performance."
+        title="About GovLens India — India's Government Accountability Tracker"
+        description="GovLens India sets government claims beside CAG audit findings and independent survey outcomes, with long-run trends from 2004. Public data, every source linked."
         path="/about"
         ogImage="/og/default.jpg"
       />

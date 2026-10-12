@@ -213,7 +213,7 @@ export default function MinisterProfilePage() {
           : `${minister.name} — Cabinet Minister Profile`}
         description={isHi
           ? `${namesHi[minister.name] ?? minister.name}, ${officialTitlesHi[minister.title] ?? minister.title}। ईमानदारी स्कोर, आपराधिक मामले (${minister.criminalCases}), संपत्ति वृद्धि और CAG लेखापरीक्षा निष्कर्ष।`
-          : `${minister.name}, ${minister.title}. Integrity score, criminal cases (${minister.criminalCases}), asset growth, and CAG audit findings. AndhBhakt.org accountability tracker.`}
+          : `${minister.name}, ${minister.title}. Integrity score, criminal cases (${minister.criminalCases}), asset growth, and CAG audit findings. GovLens India accountability tracker.`}
         path={`/minister/${params.slug}`}
         ogImage="/og/ministers.jpg"
         type="article"

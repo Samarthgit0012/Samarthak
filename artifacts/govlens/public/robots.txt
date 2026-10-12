@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://andhbhakt.org/sitemap.xml

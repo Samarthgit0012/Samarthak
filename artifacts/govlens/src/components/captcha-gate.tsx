@@ -140,7 +140,7 @@ function Challenge({ onPassed }: { onPassed: () => void }) {
         <div className="flex items-center justify-center gap-2 mb-2">
           <img src="/logo.png" alt="" className="h-8 w-8"
             onError={e => (e.currentTarget.style.display = "none")} />
-          <span className="text-xl font-bold tracking-tight">Andhbhakt.org</span>
+          <span className="text-xl font-bold tracking-tight">GovLens India</span>
         </div>
         <p className="text-muted-foreground text-sm">
           {t('captchaVerifyingHuman')}
