@@ -89,7 +89,7 @@ See [`.env.example`](.env.example). The ones that matter:
 
 Any Node host works. Example for a service host such as Render:
 
-- Build: `pnpm install --frozen-lockfile && pnpm --filter @workspace/govlens run build && pnpm --filter @workspace/api-server run build`
+- Build: `pnpm install --frozen-lockfile --prod=false && pnpm --filter @workspace/govlens run build && pnpm --filter @workspace/api-server run build`
 - Start: `cd artifacts/api-server && node --enable-source-maps ./dist/index.mjs`
 - Env: `DATABASE_URL`, `AUTO_SETUP_DB=true`, `ADMIN_TOKEN`, `NODE_ENV=production`
 

@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/govlens run build && pnpm --filter @workspace/api-server run build
+    buildCommand: (command -v pnpm >/dev/null 2>&1 || npm install -g pnpm@10) && pnpm install --frozen-lockfile --prod=false && pnpm --filter @workspace/govlens run build && pnpm --filter @workspace/api-server run build
     startCommand: cd artifacts/api-server && node --enable-source-maps ./dist/index.mjs
     healthCheckPath: /api/healthz
     envVars:
