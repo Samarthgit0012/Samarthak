@@ -1,111 +1,131 @@
-# Andhbhakt.org
+# GovLens India
 
-A civic accountability platform that cross-references official government announcements against Comptroller and Auditor General (CAG) audit findings — so citizens can see the gap between political promises and ground reality.
+A civic accountability platform that sets government claims beside audit findings and independent measurements, so citizens can see what was announced, what auditors found, and what surveys measured for people on the ground.
 
-**Live site**: [andhbhakt.org](https://andhbhakt.org)
+It is built on the open-source [andhbhakt](https://github.com/JCRYDER3/andhbhakt) project (MIT). This version keeps its data and structure and adds a balanced evidence layer, a wider source library and neutral wording. See [What was changed](#what-was-changed).
 
 ---
 
 ## What it does
 
-- **Scheme scorecards** — Every major Govt scheme (2014–present) rated against PIB press releases, CAG audit findings, and independent data (NFHS-5, NCRB, MOSPI, ASER).
-- **State governance cards** — 28 states + major UTs scored on integrity, monetary management, and development outcomes.
-- **Cabinet minister profiles** — Asset growth, criminal cases, and re-election trends sourced from ECI affidavits via ADR/myneta.info.
-- **Manifesto tracker** — Three election terms (2014, 2019, 2024) mapped to delivery evidence term-by-term.
-- **Bilingual** — Full Hindi translation across all static data.
+- **Scheme scorecards** - 57 schemes with PIB claims, CAG audit findings and linked survey outcomes.
+- **Trends since 2004** - 10 indicators from official sources with a band for each government term, and annual change before and since 2014.
+- **Independent outcomes** - 17 NFHS-4 vs NFHS-5 indicators linked to schemes, including ones that got worse.
+- **Sources** - every public source used, grouped by what it can and cannot tell you, across all parties and governments.
+- **Methodology** - the rules the platform follows, and an honest list of what is not done yet.
+- **State governance cards, minister profiles, manifesto tracker** - carried over from the original project.
+- **Hindi and English.**
+
+## What was changed
+
+| Area | Change |
+|---|---|
+| Verdict wording | "Serious audit findings" / "Minor findings only" / "No audit data". Summaries describe the audit signal and say that audit findings alone do not show whether goals were met. |
+| Long-run context | `/trends` shows indicators from 2004, banded by government term, with annual rates of change before and since 2014. |
+| Independent outcomes | `/outcomes` and each scheme page show NFHS survey changes next to audit findings. |
+| Sources | `/sources` lists government, audit, survey, election, manifesto and fact-check sources across the spectrum. |
+| News | More outlets in the news ticker. |
+| Safety | Write routes need `X-Admin-Token`. Bot-protection gates and the live AI refresh are opt-in. |
+| Hosting | One Node service serves the API and the built site. |
+| Database | Works with Supabase (TLS handled), creates its own tables and loads data on first start. |
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
 | Monorepo | pnpm workspaces |
-| Runtime | Node.js 24, TypeScript 5.9 |
+| Runtime | Node.js 22+ , TypeScript |
 | API | Express 5 (`artifacts/api-server`) |
 | Frontend | React 19 + Vite + Tailwind CSS (`artifacts/govlens`) |
-| Database | PostgreSQL + Drizzle ORM (`lib/db`) |
-| Validation | Zod v4 + drizzle-zod (`lib/api-zod`) |
-| API codegen | Orval — OpenAPI spec → typed hooks + Zod schemas (`lib/api-spec`) |
-| Bot protection | Cloudflare Turnstile + HMAC-signed session cookie |
+| Database | PostgreSQL (Supabase) + Drizzle ORM (`lib/db`) |
+| Validation | Zod |
+| API codegen | Orval (`lib/api-spec`) |
 
-## Quick start
+## Run it locally
 
 ```bash
-# Requires pnpm — https://pnpm.io
+# Needs Node 22+ and pnpm (https://pnpm.io)
 pnpm install
 
-# Copy env vars and fill in your values
 cp .env.example .env
+# edit .env and set DATABASE_URL (see below) and ADMIN_TOKEN
 
-# Create tables
-pnpm --filter @workspace/db run push
+# build the site and the API
+pnpm --filter @workspace/govlens run build
+pnpm --filter @workspace/api-server run build
 
-# Load seed data (schemes, CAG audits, PIB entries — ~800 rows)
-psql "$DATABASE_URL" -f lib/db/seed.sql
-
-# Start the API server (port from $PORT env var)
-pnpm --filter @workspace/api-server run dev
-
-# Start the frontend (separate terminal)
-pnpm --filter @workspace/govlens run dev
+# start (loads .env values from your shell; the API serves the built site)
+set -a; . ./.env; set +a
+cd artifacts/api-server && node --enable-source-maps ./dist/index.mjs
 ```
+
+Open `http://localhost:8080`. With `AUTO_SETUP_DB=true` the first start creates the tables and loads the reference data (57 schemes, 144 audit findings, 558 PIB entries, 57 state reports). Nothing is overwritten if data already exists.
+
+For development with hot reload, run the API as above and, in another terminal, `pnpm --filter @workspace/govlens run dev` (it proxies `/api` to `localhost:8080`).
+
+## Supabase setup
+
+1. Create a project, then open **Connect** and copy the **Session pooler** connection string. The direct `db.<ref>.supabase.co` host is IPv6-only and fails on many networks and hosts.
+2. Put it in `DATABASE_URL`. Percent-encode special characters in the password (`@` becomes `%40`).
+3. Start the app. Tables are created and filled automatically. Or run `supabase/setup.sql` once in the SQL editor.
+
+Row Level Security is switched on for every table with no public policies, so Supabase's auto-generated REST API cannot read or write them. The Node API connects with the database role and is not affected.
 
 ## Environment variables
 
-See [`.env.example`](.env.example) for the full list. Minimum required:
+See [`.env.example`](.env.example). The ones that matter:
 
-| Variable | When | Description |
-|---|---|---|
-| `DATABASE_URL` | Always | PostgreSQL connection string |
-| `PORT` | Always | API server port (Replit sets this automatically) |
-| `SESSION_SECRET` | Production | 64-char hex — signs session cookies. Generate: `openssl rand -hex 32` |
-| `ADMIN_TOKEN` | Production | Token for `/api/admin/*` routes (`X-Admin-Token` header) |
-| `TURNSTILE_SECRET_KEY` | Production | Cloudflare Turnstile bot-check secret |
-| `ALLOWED_ORIGIN` | Production | CORS origin (e.g. `https://govlens.in`) |
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string (required) |
+| `PORT` | API port (required) |
+| `AUTO_SETUP_DB` | `true` to create tables and load data on first start |
+| `ADMIN_TOKEN` | Needed for write routes and `/api/admin/*`, sent as `X-Admin-Token` |
+| `ALLOWED_ORIGIN` | Optional CORS origin |
+| `ENFORCE_SESSION_GATE`, `SESSION_SECRET`, `TURNSTILE_SECRET_KEY` | Optional bot-check gate |
+| `ENABLE_LIVE_REFRESH` and the `AI_INTEGRATIONS_*` pair | Optional live scheme refresh |
+
+## Deploy
+
+Any Node host works. Example for a service host such as Render:
+
+- Build: `pnpm install --frozen-lockfile && pnpm --filter @workspace/govlens run build && pnpm --filter @workspace/api-server run build`
+- Start: `cd artifacts/api-server && node --enable-source-maps ./dist/index.mjs`
+- Env: `DATABASE_URL`, `AUTO_SETUP_DB=true`, `ADMIN_TOKEN`, `NODE_ENV=production`
+
+A [`render.yaml`](render.yaml) with these settings is included.
 
 ## Where things live
 
 ```
 artifacts/
-  api-server/src/
-    routes/          Express route handlers
-    middlewares/     Auth, rate-limiting, cache, session
-    jobs/            Background jobs (news fetcher)
+  api-server/src/    routes, middlewares, jobs, lib/auto-setup.ts
   govlens/src/
-    pages/           Frontend page components
-    data/            Static civic data — schemes, state facts, ministers, manifestos, CAG reports
+    pages/           page components (trends, outcomes, sources, methodology, ...)
+    data/            static civic data; balanced-data.ts holds trends, outcomes, sources
 lib/
-  db/                Drizzle schema + migrations
-  api-zod/           Auto-generated Zod schemas
-  api-spec/          OpenAPI 3.1 spec (openapi.yaml)
+  db/                Drizzle schema, schema.sql, seed.sql
+  api-zod/           generated Zod schemas
+  api-spec/          OpenAPI spec
+supabase/setup.sql   one-file schema + data for the Supabase SQL editor
 ```
 
-## Architecture decisions
+## Data and its limits
 
-**Static data in source files** — scheme details, state facts, minister profiles, manifesto promises, and CAG report narratives live as TypeScript constants in `artifacts/govlens/src/data/`. This makes every data point auditable, diff-able, and contribution-friendly without a CMS. Only dynamic data (live PIB entries, CAG audit records, news) lives in the database.
+All data comes from public documents: CAG reports, PIB releases, NFHS, MoSPI, RBI, World Bank, ECI affidavits (via ADR), party manifestos and more. See the in-app Sources page.
 
-**Session cookie, not JWT** — The Turnstile gate issues an HMAC-signed cookie. The server refuses to start in production without `SESSION_SECRET`.
-
-**Cloudflare in front** — Production traffic passes through Cloudflare Turnstile + CF-Connecting-IP check + optional origin secret (`CF_ORIGIN_SECRET`). The `cloudflareOnlyMiddleware` is a no-op in development.
-
-**Admin via header only** — `X-Admin-Token` is the only valid admin auth mechanism. Query-string tokens are rejected (they appear in server logs and browser history).
-
-## Data sources
-
-All civic data is sourced from public documents:
-
-- **ECI affidavits** via [ADR](https://adrindia.org) / [myneta.info](https://www.myneta.info)
-- **CAG published reports** — [cag.gov.in](https://cag.gov.in)
-- **PIB press releases** — [pib.gov.in](https://pib.gov.in)
-- **NFHS-5, NCRB, MOSPI, ASER** — as cited per indicator in the source files
+- Figures in `balanced-data.ts` were compiled from the cited publications. Each carries its source link. Please verify against the source before relying on them, and report errors through the in-app form.
+- Survey and audit data arrive with a lag. NFHS-6 (2023-24) fact sheets were released in June 2026 and are not yet added.
+- Audit findings describe how a scheme was run; they do not by themselves show whether goals were met. Stored severity labels are not CAG's own grading.
+- New pages (Trends, Outcomes, Sources, Methodology) are English only; navigation and verdict text are in Hindi too.
 
 ## Contributing
 
-1. Fork the repo and clone locally.
-2. Copy `.env.example` → `.env` and fill in `DATABASE_URL`, `SESSION_SECRET`, and `ADMIN_TOKEN`.
-3. Run `pnpm install` then `pnpm --filter @workspace/db run push`.
-4. Data corrections go in `artifacts/govlens/src/data/` — each file has inline source citations.
-5. Open a PR with the source URL for any data change.
+1. Fork and clone.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` and `ADMIN_TOKEN`.
+3. `pnpm install`, then run as above.
+4. Data corrections go in `artifacts/govlens/src/data/`. Include the source URL.
 
-## License
+## Credits and license
 
-MIT
+MIT. Based on [JCRYDER3/andhbhakt](https://github.com/JCRYDER3/andhbhakt), also MIT.
